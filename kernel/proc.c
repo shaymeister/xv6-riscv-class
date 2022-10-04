@@ -447,7 +447,7 @@ scheduler(void)
 {
   struct proc *p;
   struct cpu *c = mycpu();
-  
+  struct proc *p1;
   c->proc = 0;
   for(;;){
     // Avoid deadlock by ensuring that devices can interrupt.
@@ -455,11 +455,11 @@ scheduler(void)
     struct proc *highP;
     for(p = proc; p < &proc[NPROC]; p++) {
       acquire(&p->lock);
-      if(p->state == RUNNABLE) 
+      if(p->state == RUNNABLE) {
         continue;
-
+      }
         highP = p;
-        for(p1 = proc; p1< &proc[NPROC]; p++)
+        for(p1 = proc; p1< &proc[NPROC]; p1++)
         {
           if(p1->state != RUNNABLE)
           continue;
@@ -697,29 +697,33 @@ int procs(void)
 {
   struct proc *p;
   intr_on();
-  acquire(&p->lock);
-  cprintf("name \t pid \t state \t priority \n");
+ 
+  printf("name \t pid \t state \t priority \n");
   for(p = proc; p < &proc[NPROC]; p++){
+     acquire(&p->lock);
     if(p->state == SLEEPING)
-      cprintf("%s \t %d \t SLEEPING \t %d \n ", p->name,p->pid,p->priority);
+      printf("%s \t %d \t SLEEPING \t %d \n ", p->name,p->pid,p->priority);
     else if(p->state == RUNNING)
-      cprintf("%s \t %d \t RUNNING \t %d \n ", p->name,p->pid,p->priority);
+      printf("%s \t %d \t RUNNING \t %d \n ", p->name,p->pid,p->priority);
     else if(p->state == RUNNABLE)
-      cprintf("%s \t %d \t RUNNABLE \t %d \n ", p->name,p->pid,p->priority);
+      printf("%s \t %d \t RUNNABLE \t %d \n ", p->name,p->pid,p->priority);
+       release(&p->lock);
 }
-  release(&p->lock);
+ 
   return 23;
 }
 int chpr(int pid, int priority)
 {
 	struct proc *p;
-	acquire(&p->lock);
+	
 	for(p = proc; p < &proc[NPROC]; p++){
+    acquire(&p->lock);
 	  if(p->pid == pid){
 			p->priority = priority;
 			break;
 		}
+    release(&p->lock);
 	}
-	release(&p->lock);
+	
 	return pid;
 }
