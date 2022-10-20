@@ -1,22 +1,23 @@
-#include "types.h"
-#include "stat.h"
+#include "kernel/types.h"
+#include "kernel/stat.h"
 #include "user.h"
-#include "fcntl.h"
+#include "kernel/fcntl.h"
 
 int
 main(int argc, char *argv[])
 {
   int priority, pid;
   if(argc < 3){
-    printf(2,"Usage: nice pid priority\n");
-    exit();
+    fprintf(2,"Usage: nice pid priority\n");
+    exit(1);
   }
   pid = atoi(argv[1]);
   priority = atoi(argv[2]);
   if (priority < 0 || priority > 20){
-    printf(2,"Invalid priority (0-20)!\n");
-    exit();
+    fprintf(2,"Invalid priority (0-20)!\n");
+    exit(1);
   }
-  chpr(pid, priority);
-  exit();
+  fprintf(2,"Parent %d creating child %d\n",priority, pid );
+  chprio(pid, priority);
+  exit(0);
 }

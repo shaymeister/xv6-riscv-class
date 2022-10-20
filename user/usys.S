@@ -105,3 +105,13 @@ uptime:
  li a7, SYS_uptime
  ecall
  ret
+.global procs
+procs:
+ li a7, SYS_procs
+ ecall
+ ret
+.global chprio
+chprio:
+ li a7, SYS_chprio
+ ecall
+ ret
