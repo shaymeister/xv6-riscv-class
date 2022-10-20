@@ -14,6 +14,7 @@ main(int argc, char *argv[])
     } else {
       write(1, "\n", 1);
     }
+    
   }
   exit(0);
 }
