@@ -448,6 +448,7 @@ scheduler(void)
   struct proc *p;
   struct cpu *c = mycpu();
   struct proc *p1;
+  
   c->proc = 0;
   for(;;){
     // Avoid deadlock by ensuring that devices can interrupt.
@@ -456,13 +457,12 @@ scheduler(void)
     for(p = proc; p < &proc[NPROC]; p++) {
       acquire(&p->lock);
       if(p->state == RUNNABLE) {
-        continue;
-      }
+       
         highP = p;
         for(p1 = proc; p1< &proc[NPROC]; p1++)
         {
-          if(p1->state != RUNNABLE)
-          continue;
+           if(p-> state == RUNNABLE)
+            continue;
           if(highP->priority > p1->priority)   //larger value, lower priority
           highP = p1;
         }
@@ -472,15 +472,18 @@ scheduler(void)
         p=highP;
         p->state = RUNNING;
         c->proc = p;
+        
         swtch(&c->context, &p->context);
-
         // Process is done running for now.
         // It should have changed its p->state before coming back.
         c->proc = 0;
       }
-      release(&p->lock);
+       
+    release(&p->lock);
+    }
     
   }
+  
 }
 
 // Switch to scheduler.  Must hold only p->lock
@@ -693,37 +696,41 @@ procdump(void)
     printf("\n");
   }
 }
+int chprio(int pid, int priority)
+{
+	
+	struct proc *p;
+	for(p = proc; p < &proc[NPROC]; p++){
+   //acquire
+	  if(p->pid == pid){
+      printf("%s \t %d \t %d \n %d ", p->name,p->pid,p->priority,p->lock);
+			p->priority = priority;
+			break;
+		}
+   //release 
+	}
+	
+	return pid;
+}
+
 int procs(void)
 {
   struct proc *p;
   intr_on();
- 
+  
   printf("name \t pid \t state \t priority \n");
   for(p = proc; p < &proc[NPROC]; p++){
-     acquire(&p->lock);
+    struct proc *pp = myproc();
+     acquire(&pp->lock);
     if(p->state == SLEEPING)
       printf("%s \t %d \t SLEEPING \t %d \n ", p->name,p->pid,p->priority);
     else if(p->state == RUNNING)
       printf("%s \t %d \t RUNNING \t %d \n ", p->name,p->pid,p->priority);
     else if(p->state == RUNNABLE)
       printf("%s \t %d \t RUNNABLE \t %d \n ", p->name,p->pid,p->priority);
-       release(&p->lock);
+    release(&pp->lock);
+    
 }
- 
+
   return 23;
-}
-int chpr(int pid, int priority)
-{
-	struct proc *p;
-	
-	for(p = proc; p < &proc[NPROC]; p++){
-    acquire(&p->lock);
-	  if(p->pid == pid){
-			p->priority = priority;
-			break;
-		}
-    release(&p->lock);
-	}
-	
-	return pid;
 }
