@@ -90,6 +90,7 @@ calculateWeight(int nice){
   int iterator = 0;
   while (iterator < nice && nice > 0){
   	denominator = denominator * 1.25;
+    iterator++;
   }
 
   return (int) (1024/denominator);
@@ -650,7 +651,14 @@ found:
   p->pid = allocpid();
   p->state = USED;
   p->priority = 10;
- 
+  
+  p->virtualRuntime = 0;
+  p->currentRuntime = 0;
+  p->maximumExecutiontime = 0;
+  p->niceValue = 0;
+  p->left = 0;
+  p->right = 0;
+  p->parentP = 0;
 
   // Allocate a trapframe page.
   if((p->trapframe = (struct trapframe *)kalloc()) == 0){
@@ -672,14 +680,6 @@ found:
   memset(&p->context, 0, sizeof(p->context));
   p->context.ra = (uint64)forkret;
   p->context.sp = p->kstack + PGSIZE;
-   p->virtualRuntime = 0;
-      p->currentRuntime = 0;
-      p->maximumExecutiontime = 0;
-      p->niceValue = 0;
-
-      p->left = 0;
-      p->right = 0;
-      p->parentP = 0;
   return p;
 }
 
@@ -1253,17 +1253,22 @@ int chprio(int pid, int priority)
 	
 	struct proc *p;
 	for(p = proc; p < &proc[NPROC]; p++){
-    printf("\n%p", p);
+    
+    printf("\n%d", p->pid);
 	  if(p->pid == pid){
       printf("\n%d", p->pid);
+      printf("\n priority: %d",priority);
 			p->niceValue= priority;
+      printf("\nnice value %d",p->niceValue);
+      p->weightValue = calculateWeight(p->niceValue);
+      printf("\nnice value %d",p->niceValue);
 			break;
 		}
-   
-	}
-	printf("\n %d",p->niceValue);
+  
+  }
   procs();
 	return pid;
+
 }
 
 int procs(void)
