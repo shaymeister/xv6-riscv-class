@@ -17,7 +17,6 @@ main(int argc, char *argv[])
     fprintf(2,"Invalid priority (0-20)!\n");
     exit(1);
   }
-  fprintf(2,"Parent %d creating child %d\n",priority, pid );
   chprio(pid, priority);
   exit(0);
 }

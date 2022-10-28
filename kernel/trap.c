@@ -80,6 +80,7 @@ usertrap(void)
   if(which_dev == 2){
   struct proc *p = myproc();
     p->currentRuntime ++;
+   
     yield();
   }
   usertrapret();

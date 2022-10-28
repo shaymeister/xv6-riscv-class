@@ -1045,13 +1045,14 @@ yield(void)
 {
   struct proc *p = myproc();
   acquire(&p->lock);
+   
    //If preemption should occur, function returns 1
   //If it true then process's state will be set to runnable and its virtual time will be calculated
-  if(checkPreemption(proc, runnableTasks->min_vRuntime) == 1){
-  proc->state = RUNNABLE;
-	proc->virtualRuntime = proc->virtualRuntime + proc->currentRuntime;
-  proc->currentRuntime = 0;
-	insertProcess(runnableTasks, proc);
+  if(checkPreemption(p, runnableTasks->min_vRuntime) == 1){
+  p->state = RUNNABLE;
+	p->virtualRuntime = p->virtualRuntime + p->currentRuntime;
+  p->currentRuntime = 0;
+	insertProcess(runnableTasks, p);
  
   sched();
   }
@@ -1252,15 +1253,16 @@ int chprio(int pid, int priority)
 	
 	struct proc *p;
 	for(p = proc; p < &proc[NPROC]; p++){
-   //acquire
+    printf("\n%p", p);
 	  if(p->pid == pid){
-      
+      printf("\n%d", p->pid);
 			p->niceValue= priority;
 			break;
 		}
-   //release 
+   
 	}
-	
+	printf("\n %d",p->niceValue);
+  procs();
 	return pid;
 }
 
@@ -1271,14 +1273,14 @@ int procs(void)
   
   printf("name \t pid \t state \t vruntime \t cruntime \t maxexectime \t nicevalue \t weightvalue \n");
   for(p = proc; p < &proc[NPROC]; p++){
-   
+   acquire(&p->lock);
     if(p->state == SLEEPING)
       printf("%s \t %d \t SLEEPING \t %d \t \t%d \t \t%d \t \t%d \t \t%d \n ", p->name,p->pid,p->virtualRuntime,p->currentRuntime, p->maximumExecutiontime, p->niceValue, p->weightValue);
     else if(p->state == RUNNING)
       printf("%s \t %d \t RUNNING \t %d \t \t%d \t \t%d \t \t%d \t \t%d \n ", p->name,p->pid,p->virtualRuntime,p->currentRuntime, p->maximumExecutiontime, p->niceValue, p->weightValue);
     else if(p->state == RUNNABLE)
       printf("%s \t %d \t RUNNABLE \t %d \t \t%d \t \t%d \t \t%d \t \t%d \n ", p->name,p->pid,p->virtualRuntime,p->currentRuntime, p->maximumExecutiontime, p->niceValue, p->weightValue);
-   
+   release(&p->lock);
   // int virtualRuntime;    	//Elapsed time since it was scheduled      
   // int currentRuntime;		//Time the process has run			
   // int maximumExecutiontime;	//The target scheduling latency of each process per scheduling round
