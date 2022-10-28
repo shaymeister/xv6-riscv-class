@@ -52,7 +52,7 @@ start()
 
   // switch to supervisor mode and jump to main().
   asm volatile("mret");
-}
+} 
 
 // arrange to receive timer interrupts.
 // they will arrive in machine mode at

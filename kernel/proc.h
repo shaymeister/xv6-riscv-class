@@ -80,6 +80,7 @@ struct trapframe {
 };
 
 enum procstate { UNUSED, USED, SLEEPING, RUNNABLE, RUNNING, ZOMBIE };
+enum procColor {RED, BLACK};		
 
 // Per-process state
 struct proc {
@@ -106,4 +107,14 @@ struct proc {
   struct inode *cwd;           // Current directory
   char name[16];               // Process name (debugging)
   int priority;
+  int virtualRuntime;    	//Elapsed time since it was scheduled      
+  int currentRuntime;		//Time the process has run			
+  int maximumExecutiontime;	//The target scheduling latency of each process per scheduling round
+  int niceValue;		//It is the variable that will be used to determine initial priority for process
+  int weightValue;		//Variable used to determine the process's maximumExecutiontime 	
+  enum procColor coloring;
+  struct proc *left;
+  struct proc *right;
+  struct proc *parentP;
+
 };
