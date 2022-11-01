@@ -857,6 +857,7 @@ fork(void)
   acquire(&np->lock);
   np->state = RUNNABLE;
   release(&np->lock);
+  
    insertProcess(runnableTasks, np);
    
   return pid;
