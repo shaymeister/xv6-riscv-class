@@ -5,6 +5,7 @@
 #include "spinlock.h"
 #include "proc.h"
 #include "defs.h"
+#include "stdio.h"
 
 //Red-Black Tree data structure
 struct redblackTree {
@@ -74,8 +75,7 @@ rbinit(struct redblackTree *tree, char *lockName)
   The formula to determine weight of process is:
   1024/(1.25 ^ nice value of process)
 */
-int
-calculateWeight(int nice){
+int calculateWeight(int nice){
 
   double denominator = 1.25;
 
@@ -102,8 +102,7 @@ calculateWeight(int nice){
   returns: none
   This function will determine if the tree is empty or not, i.e the tree has no processes in it.
 */
-int
-emptyTree(struct redblackTree *tree)
+int emptyTree(struct redblackTree *tree)
 {
   return tree->count == 0;
 }
@@ -328,8 +327,7 @@ insertionCases(struct redblackTree* tree, struct proc* rbProcess, int cases){
   return;
 }
 
-void
-insertProcess(struct redblackTree* tree, struct proc* p){
+void insertProcess(struct redblackTree* tree, struct proc* p){
 
   acquire(&tree->lock);
   if(!fullTree(tree)){	
@@ -1249,6 +1247,7 @@ procdump(void)
     printf("\n");
   }
 }
+
 int chprio(int pid, int priority)
 {
 	
@@ -1296,4 +1295,21 @@ int procs(void)
 }
 
   return 23;
+}
+
+void writeProcFile(int data)
+{
+  FILE *fptr;
+
+  fptr = fopen("schedInfo", "a");
+
+  if(fptr == NULL) {
+    printf("Error opening file");
+  }
+  else{
+    putw(data, fptr);
+  }
+
+  fclose(fptr);
+ 
 }
