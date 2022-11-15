@@ -1304,7 +1304,7 @@ void writeProcFile(int data)
   fptr = fopen("schedInfo", "a");
 
   if(fptr == NULL) {
-    printf("Error opening file");
+    printf("%s \n","Error opening file");
   }
   else{
     putw(data, fptr);
