@@ -1060,7 +1060,7 @@ yield(void)
   // p->state = RUNNABLE;
   // sched();
   
-  release(&p->lock);
+  release(&p->lock); 
 }
 
 // A fork child's very first scheduling by scheduler()
