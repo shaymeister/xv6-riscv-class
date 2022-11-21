@@ -1055,7 +1055,7 @@ yield(void)
   p->currentRuntime = 0;
 	insertProcess(runnableTasks, p);
  
-  sched();
+  sched(); 
   }
   // p->state = RUNNABLE;
   // sched();
