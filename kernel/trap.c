@@ -137,7 +137,7 @@ usertrapret(void)
 void 
 kerneltrap()
 {
-  int which_dev = devintr();
+  int which_dev = 0;
   uint64 sepc = r_sepc();
   uint64 sstatus = r_sstatus();
   uint64 scause = r_scause();
@@ -147,7 +147,7 @@ kerneltrap()
   if(intr_get() != 0)
     panic("kerneltrap: interrupts enabled");
 
-  if((which_dev) == 0){
+  if((which_dev = devintr()) == 0){
     printf("scause %p\n", scause);
     printf("sepc=%p stval=%p\n", r_sepc(), r_stval());
     panic("kerneltrap");
