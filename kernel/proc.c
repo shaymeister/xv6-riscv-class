@@ -5,7 +5,7 @@
 #include "spinlock.h"
 #include "proc.h"
 #include "defs.h"
-#include "stdio.h"
+
 
 //Red-Black Tree data structure
 struct redblackTree {
@@ -1297,19 +1297,31 @@ int procs(void)
   return 23;
 }
 
-void writeProcFile(int data)
-{
-  FILE *fptr;
+// void writeProcFile(int data)
+// {
+//   // //FILE *fptr;
+//   //I think I will stil need this
+//    struct file *fptr;
+  
 
-  fptr = fopen("schedInfo", "a");
+//   // //fptr = fopen("schedInfo", "a");
+//   // filewrite(fptr,5,5);
+  
 
-  if(fptr == NULL) {
-    printf("%s \n","Error opening file");
-  }
-  else{
-    putw(data, fptr);
-  }
+//   // if(fptr ==) {
+//   //   //printf("Error opening file\n");
+//   // }
+//   // else{
+//   //   putw(data, fptr);
+//   // }
 
-  fclose(fptr);
+//   // fclose(fptr);
+//   //--------------------------------------- old code
+
+
+//   //need to use sys_open code here from sysfile.c to open a file
+//   //if no file detected with that path, use the create method
+//   //then use sys_write code to write data to the file OR filewrite from file.c 
+//   //fileclose?? from file.c
  
-}
+// }

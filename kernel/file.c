@@ -12,6 +12,7 @@
 #include "file.h"
 #include "stat.h"
 #include "proc.h"
+//#include "sysfile.c" -- this broke things so discard later -H
 
 struct devsw devsw[NDEV];
 struct {
