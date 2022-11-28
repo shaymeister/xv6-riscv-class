@@ -167,13 +167,8 @@ kerneltrap()
 void
 clockintr()
 {
-  // acquire(&p->lock);
-
-  // release(&p->lock);
   acquire(&tickslock);
   ticks++;
-  
-  //printf("%d", ticks);
   wakeup(&ticks);
   release(&tickslock);
 

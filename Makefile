@@ -135,6 +135,7 @@ UPROGS=\
 	$U/_ps\
 	$U/_dpro\
 	$U/_nice\
+	$U/_benchmark\
 
 fs.img: mkfs/mkfs README $(UPROGS)
 	mkfs/mkfs fs.img README $(UPROGS)

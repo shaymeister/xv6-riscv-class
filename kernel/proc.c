@@ -5,7 +5,13 @@
 #include "spinlock.h"
 #include "proc.h"
 #include "defs.h"
-
+//#include "user/echo.c"
+#include "file.c"
+#include "stat.h"
+#include "fs.h"
+#include "sleeplock.h"
+#include "file.h"
+#include "fcntl.h"
 //Red-Black Tree data structure
 struct redblackTree {
   int count;
@@ -984,7 +990,8 @@ scheduler(void)
 {
   struct proc *p;
   struct cpu *c = mycpu();
-
+  // char *args[] = { "echo","hello", 0 };
+  // echo("echo", args);
   c->proc = 0;
   for(;;){
     // Avoid deadlock by ensuring that devices can interrupt.
@@ -996,7 +1003,7 @@ scheduler(void)
         acquire(&p->lock);
         if (p->state == RUNNABLE){
          
-        
+        struct file *f =filealloc();
           p->state = RUNNING;
           c->proc = p;
         swtch(&c->context, &p->context);
@@ -1265,7 +1272,6 @@ int chprio(int pid, int priority)
       printf("\nnice value %d",p->niceValue);
 			break;
 		}
-  
   }
   procs();
 	return pid;
@@ -1297,3 +1303,4 @@ int procs(void)
 
   return 23;
 }
+ 
