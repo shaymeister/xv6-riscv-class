@@ -12,10 +12,14 @@ int
 fetchaddr(uint64 addr, uint64 *ip)
 {
   struct proc *p = myproc();
-  if(addr >= p->sz || addr+sizeof(uint64) > p->sz) // both tests needed, in case of overflow
+  if(addr >= p->sz || addr+sizeof(uint64) > p->sz){ // both tests needed, in case of overflow
+
     return -1;
-  if(copyin(p->pagetable, (char *)ip, addr, sizeof(*ip)) != 0)
+  }
+  if(copyin(p->pagetable, (char *)ip, addr, sizeof(*ip)) != 0){
+
     return -1;
+  }
   return 0;
 }
 
@@ -56,7 +60,9 @@ argraw(int n)
 void
 argint(int n, int *ip)
 {
+ 
   *ip = argraw(n);
+  
 }
 
 // Retrieve an argument as a pointer.
@@ -65,6 +71,7 @@ argint(int n, int *ip)
 void
 argaddr(int n, uint64 *ip)
 {
+
   *ip = argraw(n);
 }
 
@@ -76,6 +83,7 @@ argstr(int n, char *buf, int max)
 {
   uint64 addr;
   argaddr(n, &addr);
+
   return fetchstr(addr, buf, max);
 }
 
@@ -101,8 +109,16 @@ extern uint64 sys_unlink(void);
 extern uint64 sys_link(void);
 extern uint64 sys_mkdir(void);
 extern uint64 sys_close(void);
-extern uint64 sys_chprio(void);
-extern uint64 sys_procs(void);
+
+
+#ifdef LAB_NET
+extern uint64 sys_connect(void);
+#endif
+#ifdef LAB_PGTBL
+extern uint64 sys_pgaccess(void);
+#endif
+
+
 // An array mapping syscall numbers from syscall.h
 // to the function that handles the system call.
 static uint64 (*syscalls[])(void) = {
@@ -127,9 +143,17 @@ static uint64 (*syscalls[])(void) = {
 [SYS_link]    sys_link,
 [SYS_mkdir]   sys_mkdir,
 [SYS_close]   sys_close,
-[SYS_chprio]  sys_chprio,
-[SYS_procs]   sys_procs,
+
+#ifdef LAB_NET
+[SYS_connect] sys_connect,
+#endif
+#ifdef LAB_PGTBL
+[SYS_pgaccess] sys_pgaccess,
+#endif
+
 };
+
+
 
 void
 syscall(void)

@@ -99,7 +99,7 @@ sys_close(void)
 {
   int fd;
   struct file *f;
-
+ 
   if(argfd(0, &fd, &f) < 0)
     return -1;
   myproc()->ofile[fd] = 0;
@@ -310,6 +310,16 @@ sys_open(void)
   struct inode *ip;
   int n;
 
+   struct proc *p = myproc();
+  printf( "\ntrapframe0:%d",p->trapframe->a0);
+ 
+  printf( "\ntrapframe1:%d",p->trapframe->a1);
+  printf( "\ntrapframe2:%d",p->trapframe->a2);
+  printf( "\ntrapframe3:%d",p->trapframe->a3);
+  printf( "\ntrapframe4:%d",p->trapframe->a4);
+  printf( "\ntrapframe5:%d",p->trapframe->a5);
+  printf( "\ntrapframe6:%d",p->trapframe->a6);
+  printf( "\ntrapframe7:%d",p->trapframe->a7);
   argint(1, &omode);
   if((n = argstr(0, path, MAXPATH)) < 0)
     return -1;
@@ -366,7 +376,7 @@ sys_open(void)
 
   iunlock(ip);
   end_op();
-
+   printf("\n %s", path);
   return fd;
 }
 
@@ -503,3 +513,29 @@ sys_pipe(void)
   }
   return 0;
 }
+
+
+#ifdef LAB_NET
+int
+sys_connect(void)
+{
+  struct file *f;
+  int fd;
+  uint32 raddr;
+  uint32 rport;
+  uint32 lport;
+
+  argint(0, (int*)&raddr);
+  argint(1, (int*)&lport);
+  argint(2, (int*)&rport);
+
+  if(sockalloc(&f, raddr, lport, rport) < 0)
+    return -1;
+  if((fd=fdalloc(f)) < 0){
+    fileclose(f);
+    return -1;
+  }
+
+  return fd;
+}
+#endif

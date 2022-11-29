@@ -36,5 +36,7 @@ entry("getpid");
 entry("sbrk");
 entry("sleep");
 entry("uptime");
-entry("procs");
-entry("chprio");
+
+entry("connect");
+entry("pgaccess");
+
