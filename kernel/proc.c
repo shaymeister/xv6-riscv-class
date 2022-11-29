@@ -1,10 +1,16 @@
-#include "types.h"
-#include "param.h"
+#include "types.h" //
+#include "param.h"//
 #include "memlayout.h"
-#include "riscv.h"
-#include "spinlock.h"
-#include "proc.h"
-#include "defs.h"
+#include "riscv.h"//
+#include "spinlock.h"//
+#include "proc.h"//
+#include "defs.h"//
+#include "fs.h"//
+#include "sleeplock.h"//
+#include "file.h"
+#include "stat.h"//
+#include "fcntl.h"
+
 
 struct cpu cpus[NCPU];
 
@@ -43,10 +49,210 @@ proc_mapstacks(pagetable_t kpgtbl)
   }
 }
 
+static int
+fdalloc(struct file *f)
+{
+  int fd;
+  struct proc *p = myproc();
+
+  for(fd = 0; fd < NOFILE; fd++){
+    if(p->ofile[fd] == 0){
+      p->ofile[fd] = f;
+      return fd;
+    }
+  }
+  return -1;
+}
+static int
+argfd(int n, int *pfd, struct file **pf)
+{
+  int fd;
+  struct file *f;
+
+  argint(n, &fd);
+  if(fd < 0 || fd >= NOFILE || (f=myproc()->ofile[fd]) == 0)
+    return -1;
+  if(pfd)
+    *pfd = fd;
+  if(pf)
+    *pf = f;
+  return 0;
+}
+uint64
+read(void)
+{
+  struct file *f;
+  int n;
+  uint64 p;
+
+  argaddr(1, &p);
+  argint(2, &n);
+  if(argfd(0, 0, &f) < 0)
+    return -1;
+  return fileread(f, p, n);
+}
+
+uint64
+write(void)
+{
+  struct file *f;
+  int n;
+  uint64 p;
+  
+  argaddr(1, &p);
+  argint(2, &n);
+  if(argfd(0, 0, &f) < 0)
+    return -1;
+
+  return filewrite(f, p, n);
+}
+
+uint64
+close(void)
+{
+  int fd;
+  struct file *f;
+  if(argfd(0, &fd, &f) < 0)
+    return -1;
+  myproc()->ofile[fd] = 0;
+  fileclose(f);
+  return 0;
+}
+static struct inode*
+create(char *path, short type, short major, short minor)
+{
+  struct inode *ip, *dp;
+  char name[DIRSIZ];
+  
+  if((dp = nameiparent(path, name)) == 0){
+    printf("fail");
+    return 0;
+  }
+printf("hi");
+  ilock(dp);
+
+  if((ip = dirlookup(dp, name, 0)) != 0){
+    iunlockput(dp);
+    ilock(ip);
+    if(type == T_FILE && (ip->type == T_FILE || ip->type == T_DEVICE))
+      return ip;
+    iunlockput(ip);
+    return 0;
+  }
+
+  if((ip = ialloc(dp->dev, type)) == 0){
+    iunlockput(dp);
+    return 0;
+  }
+
+  ilock(ip);
+  ip->major = major;
+  ip->minor = minor;
+  ip->nlink = 1;
+  iupdate(ip);
+
+  if(type == T_DIR){  // Create . and .. entries.
+    // No ip->nlink++ for ".": avoid cyclic ref count.
+    if(dirlink(ip, ".", ip->inum) < 0 || dirlink(ip, "..", dp->inum) < 0)
+      goto fail;
+  }
+
+  if(dirlink(dp, name, ip->inum) < 0)
+    goto fail;
+
+  if(type == T_DIR){
+    // now that success is guaranteed:
+    dp->nlink++;  // for ".."
+    iupdate(dp);
+  }
+
+  iunlockput(dp);
+
+  return ip;
+
+ fail:
+  // something went wrong. de-allocate ip.
+  ip->nlink = 0;
+  iupdate(ip);
+  iunlockput(ip);
+  iunlockput(dp);
+  return 0;
+}
+uint64
+open(void)
+{
+  char path[MAXPATH];
+  int fd, omode;
+  struct file *f;
+  struct inode *ip;
+  int n;
+   
+  argint(1, &omode);
+  if((n = argstr(0, path, MAXPATH)) < 0)
+    return -1;
+
+  begin_op();
+
+  if(omode & O_CREATE){
+    ip = create(path, T_FILE, 0, 0);
+    if(ip == 0){
+      end_op();
+      return -1;
+    }
+  } else {
+    if((ip = namei(path)) == 0){
+      end_op();
+      return -1;
+    }
+    ilock(ip);
+    if(ip->type == T_DIR && omode != O_RDONLY){
+      iunlockput(ip);
+      end_op();
+      return -1;
+    }
+  }
+
+  if(ip->type == T_DEVICE && (ip->major < 0 || ip->major >= NDEV)){
+    iunlockput(ip);
+    end_op();
+    return -1;
+  }
+
+  if((f = filealloc()) == 0 || (fd = fdalloc(f)) < 0){
+    if(f)
+      fileclose(f);
+    iunlockput(ip);
+    end_op();
+    return -1;
+  }
+
+  if(ip->type == T_DEVICE){
+    f->type = FD_DEVICE;
+    f->major = ip->major;
+  } else {
+    f->type = FD_INODE;
+    f->off = 0;
+  }
+  f->ip = ip;
+  f->readable = !(omode & O_WRONLY);
+  f->writable = (omode & O_WRONLY) || (omode & O_RDWR);
+
+  if((omode & O_TRUNC) && ip->type == T_FILE){
+    itrunc(ip);
+  }
+
+  iunlock(ip);
+  end_op();
+
+  return fd;
+}
 // initialize the proc table.
 void
 procinit(void)
 {
+  
+ 
+  
   struct proc *p;
   
   initlock(&pid_lock, "nextpid");
@@ -403,7 +609,7 @@ wait(uint64 addr)
       if(pp->parent == p){
         // make sure the child isn't still in exit() or swtch().
         acquire(&pp->lock);
-
+        
         havekids = 1;
         if(pp->state == ZOMBIE){
           // Found one.
@@ -460,8 +666,22 @@ scheduler(void)
         // before jumping back to us.
         p->state = RUNNING;
         c->proc = p;
+        release(&p->lock);
+          // int a0 = p->trapframe->a0;
+          // int a1 = p->trapframe->a1;
+ 
+ 
+          // p->trapframe->a0 = 0;
+          // p->trapframe->a1 = 2;
+          //   int fd = open();
+          // printf("hi");
+          // p->trapframe->a0= fd;
+          //   close();
+          // p->trapframe->a0 = a0;
+          // p->trapframe->a1 = a1;
+        acquire(&p->lock);
         swtch(&c->context, &p->context);
-
+        
         // Process is done running for now.
         // It should have changed its p->state before coming back.
         c->proc = 0;
@@ -502,11 +722,15 @@ sched(void)
 void
 yield(void)
 {
+  
+  
   struct proc *p = myproc();
+
   acquire(&p->lock);
   p->state = RUNNABLE;
   sched();
   release(&p->lock);
+  
 }
 
 // A fork child's very first scheduling by scheduler()
@@ -681,3 +905,4 @@ procdump(void)
     printf("\n");
   }
 }
+

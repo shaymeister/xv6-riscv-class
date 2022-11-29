@@ -99,7 +99,7 @@ sys_close(void)
 {
   int fd;
   struct file *f;
-
+ 
   if(argfd(0, &fd, &f) < 0)
     return -1;
   myproc()->ofile[fd] = 0;
@@ -309,7 +309,15 @@ sys_open(void)
   struct file *f;
   struct inode *ip;
   int n;
-
+  //  struct proc *p = myproc();
+  // printf( "\ntrapframe0:%d",p->trapframe->a0);
+  // printf( "\ntrapframe1:%d",p->trapframe->a1);
+  // printf( "\ntrapframe2:%d",p->trapframe->a2);
+  // printf( "\ntrapframe3:%d",p->trapframe->a3);
+  // printf( "\ntrapframe4:%d",p->trapframe->a4);
+  // printf( "\ntrapframe5:%d",p->trapframe->a5);
+  // printf( "\ntrapframe6:%d",p->trapframe->a6);
+  // printf( "\ntrapframe7:%d",p->trapframe->a7);
   argint(1, &omode);
   if((n = argstr(0, path, MAXPATH)) < 0)
     return -1;
