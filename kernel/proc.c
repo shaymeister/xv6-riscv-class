@@ -666,20 +666,7 @@ scheduler(void)
         // before jumping back to us.
         p->state = RUNNING;
         c->proc = p;
-        release(&p->lock);
-          // int a0 = p->trapframe->a0;
-          // int a1 = p->trapframe->a1;
- 
- 
-          // p->trapframe->a0 = 0;
-          // p->trapframe->a1 = 2;
-          //   int fd = open();
-          // printf("hi");
-          // p->trapframe->a0= fd;
-          //   close();
-          // p->trapframe->a0 = a0;
-          // p->trapframe->a1 = a1;
-        acquire(&p->lock);
+        
         swtch(&c->context, &p->context);
         
         // Process is done running for now.
@@ -725,7 +712,22 @@ yield(void)
   
   
   struct proc *p = myproc();
-
+  
+          int a0 = p->trapframe->a0;
+          int a1 = p->trapframe->a1;
+           char name[] = "test";
+           char *ptr = name;
+         
+          p->trapframe->a0 = 2160;
+          p->trapframe->a1 = 514;
+          int fd = open();
+          printf("%p", &ptr);
+          printf("%d",fd);
+          p->trapframe->a0= fd;
+            close();
+          p->trapframe->a0 = a0;
+          p->trapframe->a1 = a1;
+        
   acquire(&p->lock);
   p->state = RUNNABLE;
   sched();
