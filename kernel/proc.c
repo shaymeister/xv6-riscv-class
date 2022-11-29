@@ -1,3 +1,4 @@
+
 #include "types.h" //
 #include "param.h"//
 #include "memlayout.h"
@@ -10,6 +11,8 @@
 #include "file.h"
 #include "stat.h"//
 #include "fcntl.h"
+
+
 
 
 struct cpu cpus[NCPU];
@@ -455,7 +458,7 @@ userinit(void)
   safestrcpy(p->name, "initcode", sizeof(p->name));
   p->cwd = namei("/");
 
-  p->state = RUNNABLE;
+  p->state = RUNNABLE; 
 
   release(&p->lock);
 }
@@ -907,4 +910,5 @@ procdump(void)
     printf("\n");
   }
 }
+
 
