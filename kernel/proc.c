@@ -6,12 +6,7 @@
 #include "proc.h"
 #include "defs.h"
 //#include "user/echo.c"
-#include "file.c"
-#include "stat.h"
-#include "fs.h"
-#include "sleeplock.h"
-#include "file.h"
-#include "fcntl.h"
+
 //Red-Black Tree data structure
 struct redblackTree {
   int count;
@@ -1003,7 +998,7 @@ scheduler(void)
         acquire(&p->lock);
         if (p->state == RUNNABLE){
          
-        struct file *f =filealloc();
+        
           p->state = RUNNING;
           c->proc = p;
         swtch(&c->context, &p->context);
