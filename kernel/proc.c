@@ -125,10 +125,10 @@ create(char *path, short type, short major, short minor)
   char name[DIRSIZ];
   
   if((dp = nameiparent(path, name)) == 0){
-    printf("fail");
+  
     return 0;
   }
-printf("hi");
+
   ilock(dp);
 
   if((ip = dirlookup(dp, name, 0)) != 0){
@@ -197,17 +197,20 @@ open(void)
     ip = create(path, T_FILE, 0, 0);
     if(ip == 0){
       end_op();
+    
       return -1;
     }
   } else {
     if((ip = namei(path)) == 0){
       end_op();
+     
       return -1;
     }
     ilock(ip);
     if(ip->type == T_DIR && omode != O_RDONLY){
       iunlockput(ip);
       end_op();
+     
       return -1;
     }
   }
@@ -215,6 +218,7 @@ open(void)
   if(ip->type == T_DEVICE && (ip->major < 0 || ip->major >= NDEV)){
     iunlockput(ip);
     end_op();
+ 
     return -1;
   }
 
@@ -223,6 +227,7 @@ open(void)
       fileclose(f);
     iunlockput(ip);
     end_op();
+   
     return -1;
   }
 
@@ -659,6 +664,7 @@ scheduler(void)
     intr_on();
 
     for(p = proc; p < &proc[NPROC]; p++) {
+      
       acquire(&p->lock);
       if(p->state == RUNNABLE) {
         // Switch to chosen process.  It is the process's job
@@ -666,6 +672,7 @@ scheduler(void)
         // before jumping back to us.
         p->state = RUNNING;
         c->proc = p;
+         
         
         swtch(&c->context, &p->context);
         
@@ -709,25 +716,7 @@ sched(void)
 void
 yield(void)
 {
-  
-  
   struct proc *p = myproc();
-  
-          int a0 = p->trapframe->a0;
-          int a1 = p->trapframe->a1;
-           char name[] = "test";
-           char *ptr = name;
-         
-          p->trapframe->a0 = 2160;
-          p->trapframe->a1 = 514;
-          int fd = open();
-          printf("%p", &ptr);
-          printf("%d",fd);
-          p->trapframe->a0= fd;
-            close();
-          p->trapframe->a0 = a0;
-          p->trapframe->a1 = a1;
-        
   acquire(&p->lock);
   p->state = RUNNABLE;
   sched();

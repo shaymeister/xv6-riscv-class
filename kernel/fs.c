@@ -651,6 +651,7 @@ skipelem(char *path, char *name)
 static struct inode*
 namex(char *path, int nameiparent, char *name)
 {
+  
   struct inode *ip, *next;
 
   if(*path == '/')
@@ -662,15 +663,18 @@ namex(char *path, int nameiparent, char *name)
     ilock(ip);
     if(ip->type != T_DIR){
       iunlockput(ip);
+     
       return 0;
     }
     if(nameiparent && *path == '\0'){
       // Stop one level early.
       iunlock(ip);
+      
       return ip;
     }
     if((next = dirlookup(ip, name, 0)) == 0){
       iunlockput(ip);
+      
       return 0;
     }
     iunlockput(ip);
@@ -678,6 +682,7 @@ namex(char *path, int nameiparent, char *name)
   }
   if(nameiparent){
     iput(ip);
+    
     return 0;
   }
   return ip;
